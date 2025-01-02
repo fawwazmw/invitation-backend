@@ -1,7 +1,7 @@
 {
     "functions": {
         "api/*.php": {
-            "runtime": "vercel-php@0.7.3",
+            "runtime": "vercel-php@0.6.2",
             "memory": 1024,
             "maxDuration": 10
         }
@@ -15,6 +15,13 @@
             "dest": "/public/favicon.ico"
         },
         {
+            "src": "/kamu.png",
+            "headers": {
+                "Cache-Control": "public, max-age=31556952, immutable"
+            },
+            "dest": "/public/kamu.png"
+        },
+        {
             "src": "/robots.txt",
             "headers": {
                 "Cache-Control": "public, max-age=31556952, immutable"
@@ -22,33 +29,15 @@
             "dest": "/public/robots.txt"
         },
         {
-            "src": "/css/(.*)",
+            "src": "/(css|js)/(.*)",
             "headers": {
                 "Cache-Control": "public, max-age=86400, immutable"
             },
-            "dest": "/public/css/$1"
-        },
-        {
-            "src": "/js/(.*)",
-            "headers": {
-                "Cache-Control": "public, max-age=86400, immutable"
-            },
-            "dest": "/public/js/$1"
-        },
-        {
-            "src": "/assets/(.*)",
-            "headers": {
-                "Cache-Control": "public, max-age=86400, immutable"
-            },
-            "dest": "/public/assets/$1"
-        },
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/index.php"
+            "dest": "/public/$1/$2"
         },
         {
             "src": "/(.*)",
-            "dest": "/public/index.php"
+            "dest": "/api/index.php"
         }
     ]
 }
