@@ -33,7 +33,7 @@
             "headers": {
                 "Cache-Control": "public, max-age=86400, immutable"
             },
-            "dest": "/public/$1/$2"
+            "dest": "/api/index.php?$1/$2"
         },
         {
             "src": "/(.*)",
