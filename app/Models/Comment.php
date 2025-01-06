@@ -43,15 +43,20 @@ final class Comment extends Model
                         'presence',
                         'comment',
                         'is_admin',
-                        'created_at',
-                        ...(!empty(auth()->user()->is_admin) ? ['ip', 'own', 'user_agent'] : [])
+                        'created_at'
                     ])
                     ->orderBy('id')
-                    ->limit(10); // Tambahkan limit untuk mencegah query terlalu berat
+                    ->limit(10)  // Batasi jumlah child comments
+                    ->offset($this->getOffset()); // Tambahkan pagination
             }
         )->as('comments')
             ->with($this->likes())
-            ->recursive();
+            ->recursive(3); // Batasi kedalaman recursive
+    }
+
+    private function getOffset(): float|int
+    {
+        return (request()->get('next', 0) * 10);
     }
 
     public function likes(): Relational

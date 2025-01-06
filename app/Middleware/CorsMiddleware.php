@@ -11,48 +11,38 @@ final class CorsMiddleware implements MiddlewareInterface
 {
     public function handle(Request $request, Closure $next)
     {
-        // Add detailed logging
-        error_log('CORS Request Details:');
-        error_log('Origin: ' . $request->header('Origin'));
-        error_log('Method: ' . $request->method());
+        if (!$request->ajax() && !$request->method(Request::OPTIONS)) {
+            return $next($request);
+        }
 
         $header = respond()->getHeader();
+        $header->set('Access-Control-Allow-Origin', '*');
+        $header->set('Access-Control-Expose-Headers', 'Authorization, Content-Type, Cache-Control, Content-Disposition');
 
-        // Define allowed domains
-        $allowedOrigins = [
-            'https://weddinginvitation.fwzdev.site',
-            // Add other domains if needed
-        ];
+        $vary = $header->has('Vary') ? explode(', ', $header->get('Vary')) : [];
+        $vary = array_unique([...$vary, 'Accept', 'Origin', 'User-Agent', 'Access-Control-Request-Method', 'Access-Control-Request-Headers']);
+        $header->set('Vary', join(', ', $vary));
 
-        $origin = $request->header('Origin');
-
-        // Only allow specified origins
-        if (in_array($origin, $allowedOrigins)) {
-            $header->set('Access-Control-Allow-Origin', $origin);
-        }
-
-        // Set other CORS headers
-        $header->set('Access-Control-Allow-Credentials', 'true');
-        $header->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $header->set('Access-Control-Allow-Headers', 'X-Access-Key, Origin, X-Requested-With, Content-Type, Accept, Authorization');
-        $header->set('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
-
-        // Handle preflight requests
-        if ($request->method() === Request::OPTIONS) {
-            error_log('Handling OPTIONS preflight request');
-            return respond()
-                ->setCode(Respond::HTTP_NO_CONTENT)
-                ->send();
-        }
-
-        try {
+        if (!$request->method(Request::OPTIONS)) {
             return $next($request);
-        } catch (Exception $e) {
-            error_log('CORS Error: ' . $e->getMessage());
-            return respond()
-                ->setCode(Respond::HTTP_INTERNAL_SERVER_ERROR)
-                ->setBody(['error' => 'Internal Server Error'])
-                ->send();
         }
+
+        $header->unset('Content-Type');
+
+        if (!$request->server->has('HTTP_ACCESS_CONTROL_REQUEST_METHOD')) {
+            return respond()->setCode(Respond::HTTP_NO_CONTENT);
+        }
+
+        $header->set(
+            'Access-Control-Allow-Methods',
+            strtoupper($request->server->get('HTTP_ACCESS_CONTROL_REQUEST_METHOD', $request->method()))
+        );
+
+        $header->set(
+            'Access-Control-Allow-Headers',
+            $request->server->get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS', 'Origin, Content-Type, Accept, Authorization, Accept-Language')
+        );
+
+        return respond()->setCode(Respond::HTTP_NO_CONTENT);
     }
 }

@@ -3,7 +3,7 @@
         "api/*.php": {
             "runtime": "vercel-php@0.6.2",
             "memory": 1024,
-            "maxDuration": 30
+            "maxDuration": 60
         }
     },
     "routes": [
@@ -37,10 +37,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "/api/index.php",
-            "headers": {
-                "Cache-Control": "public, max-age=0, must-revalidate"
-            }
+            "dest": "/api/index.php"
         }
     ]
 }
