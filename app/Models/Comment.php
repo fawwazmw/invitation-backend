@@ -36,9 +36,22 @@ final class Comment extends Model
             'parent_id',
             'uuid',
             function (Query $query): Query {
-                return $query->select(['uuid', 'name', 'presence', 'comment', 'is_admin', 'created_at', ...(!empty(auth()->user()->is_admin) ? ['ip', 'own', 'user_agent'] : [])])->orderBy('id');
+                return $query
+                    ->select([
+                        'uuid',
+                        'name',
+                        'presence',
+                        'comment',
+                        'is_admin',
+                        'created_at',
+                        ...(!empty(auth()->user()->is_admin) ? ['ip', 'own', 'user_agent'] : [])
+                    ])
+                    ->orderBy('id')
+                    ->limit(10); // Tambahkan limit untuk mencegah query terlalu berat
             }
-        )->as('comments')->with($this->likes())->recursive();
+        )->as('comments')
+            ->with($this->likes())
+            ->recursive();
     }
 
     public function likes(): Relational
