@@ -13,7 +13,7 @@ final class CorsMiddleware implements MiddlewareInterface
     {
         $header = respond()->getHeader();
 
-        // Set allowed origins - you can specify your domain instead of '*'
+        // Set allowed origins
         $header->set('Access-Control-Allow-Origin', 'https://weddinginvitation.fwzdev.site');
         $header->set('Access-Control-Allow-Credentials', 'true');
         $header->set('Access-Control-Expose-Headers', 'Authorization, Content-Type, Cache-Control, Content-Disposition');
@@ -21,18 +21,15 @@ final class CorsMiddleware implements MiddlewareInterface
         // Allow common HTTP methods
         $header->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 
-        // Allow common headers
-        $header->set('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Requested-With');
+        // Added x-access-key to allowed headers
+        $header->set('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Requested-With, X-Access-Key');
 
-        // Set max age for preflight requests
-        $header->set('Access-Control-Max-Age', '86400'); // 24 hours
+        $header->set('Access-Control-Max-Age', '86400');
 
-        // Handle Vary header
         $vary = $header->has('Vary') ? explode(', ', $header->get('Vary')) : [];
         $vary = array_unique([...$vary, 'Accept', 'Origin', 'User-Agent', 'Access-Control-Request-Method', 'Access-Control-Request-Headers']);
         $header->set('Vary', join(', ', $vary));
 
-        // Handle preflight requests
         if ($request->method(Request::OPTIONS)) {
             return respond()->setCode(Respond::HTTP_NO_CONTENT);
         }
